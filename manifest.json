@@ -1,0 +1,17 @@
+{
+    "manifest_version": 3,
+    "name": "Facebook Interaction Extension",
+    "version": "1.0",
+    "description": "Automates liking posts and refreshing on Facebook",
+    "permissions": ["activeTab","storage","scripting"],
+    "action": {
+      "default_popup": "popup.html"
+    },
+    "content_scripts": [
+        {
+          "matches": ["https://*.facebook.com/*"],
+          "js": ["content.js"]
+        }
+    ]
+  }
+  
