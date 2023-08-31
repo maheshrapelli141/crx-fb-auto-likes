@@ -63,23 +63,31 @@ const init = (likeInterval, stopSignal) => {
     const DESKTOP_POSTS = `div[aria-posinset]`;
     const DESKTOP_LIKE_BTN = `[aria-label="Like"] span`;
 
-    const MOBILE_POSTS = `#screen-root > div > div:nth-child(1) > div:nth-child(INDEX)`;
-    const MOBILE_LIKE_BTN = `div:nth-child(6) > div:nth-child(1)`;
-    const MOBILE_LIKE_ALT_BTN = `div:nth-child(5) > div:nth-child(1)`;
-    const TEST_BTN = `div > button`;
-    const YOU_TEXT = `div:nth-child(5) > div:nth-child(2) > div > div`;
+    const IPHONE_MOBILE_POSTS = `#screen-root > div > div:nth-child(1) > div:nth-child(INDEX)`;
+    const IPHONE_MOBILE_LIKE_BTN = `div:nth-child(6) > div:nth-child(1)`;
+    const IPHONE_MOBILE_LIKE_ALT_BTN = `div:nth-child(5) > div:nth-child(1)`;
+    const IPHONE_TEST_BTN = `div > button`;
+    const IPHONE_YOU_TEXT = `div:nth-child(5) > div:nth-child(2) > div > div`;
 
-
+    let MOBILE_POSTS;
+    if(window.location.pathname.length > 1) MOBILE_POSTS = `.feed article`;
+    else MOBILE_POSTS = `#m_newsfeed_stream > div > section > article`;
+    // const MOBILE_POSTS = `#m_newsfeed_stream > div > section > article`;
+     
+    const MOBILE_LIKE_BTN = `footer > div > div:nth-child(2) > div > a`;
+    const MOBILE_LIKE_ALT_BTN = `footer > div > div:nth-child(2) > div > a`;
+    const TEST_BTN = `footer > div > div:nth-child(2) > div > a`;
+    const YOU_TEXT = `footer > div > div:nth-child(1) > a > div > div > div`;
     
     
     function likePost(post) {
         post.scrollIntoView({ behavior: 'smooth' })
         if(!ifAlreadyLiked(post)){
-            if(post.querySelector(MOBILE_LIKE_BTN) && post.querySelector(`${MOBILE_LIKE_BTN} > ${TEST_BTN}`)) {
+            if(post.querySelector(MOBILE_LIKE_BTN)) {
                 post.querySelector(MOBILE_LIKE_BTN).click();
-            } else if(post.querySelector(MOBILE_LIKE_ALT_BTN) && post.querySelector(`${MOBILE_LIKE_ALT_BTN} > ${TEST_BTN}`)) {
-                post.querySelector(MOBILE_LIKE_ALT_BTN).click();
-            }
+            } else  {
+                throw new Error('Invalid post');
+            } 
         }
     }
 
@@ -91,7 +99,7 @@ const init = (likeInterval, stopSignal) => {
         //idx+10 because in mobile version actual posts start from 10th div and each post appears after 2 divs
         //thats why further posts are fetched by increment by 2
         // console.log(MOBILE_POSTS.replace('INDEX',idx+10));
-        return document.querySelector(MOBILE_POSTS.replace('INDEX',idx+10));
+        return document.querySelectorAll(MOBILE_POSTS.replace('INDEX',idx+10));
     }
 
     function start() {
@@ -99,11 +107,16 @@ const init = (likeInterval, stopSignal) => {
             if(!window.currentIndex) window.currentIndex = 0;
 
             function clickNextLikeButton() {
-                let post = getPosts(window.currentIndex);
-                // console.log({post});
-                if(post && post.querySelector(MOBILE_LIKE_BTN) || post.querySelector(MOBILE_LIKE_ALT_BTN)){
-                    likePost(post);
-                    window.currentIndex = window.currentIndex + 2;
+                let posts = getPosts(window.currentIndex);
+                console.log({posts});
+                if(posts && posts[window.currentIndex].querySelector(MOBILE_LIKE_BTN) || posts[window.currentIndex].querySelector(MOBILE_LIKE_ALT_BTN)){
+                    try {
+                        likePost(posts[window.currentIndex]);
+                    } catch (error) {
+                        window.currentIndex++;
+                        clickNextLikeButton();
+                    }
+                    window.currentIndex++;
                 }
             }
 
